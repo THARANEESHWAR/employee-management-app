@@ -337,6 +337,36 @@ module.exports = (srv) => {
     return `✅ Attendance marked for ${empId} on ${today}`;
   });
 
+  // ── ACTION: CHECK OUT ───────────────────
+  srv.on('checkOut', async (req) => {
+    const { empId } = req.data;
+    const today = new Date().toISOString().split('T')[0];
+
+    const record = await SELECT.one
+      .from('com.employee.app.Attendance')
+      .where({ EmpId: empId, AttDate: today });
+
+    if (!record) {
+      return req.error(400, `No attendance record found for ${empId} today. Please mark attendance first.`);
+    }
+    if (record.CheckOut) {
+      return req.error(400, `${empId} has already checked out today at ${record.CheckOut}`);
+    }
+
+    const checkOut = new Date().toTimeString().split(' ')[0].slice(0, 5);
+
+    // Calculate working hours from CheckIn to CheckOut
+    const [inH, inM]   = record.CheckIn.split(':').map(Number);
+    const [outH, outM] = checkOut.split(':').map(Number);
+    const workingHours = parseFloat(((outH * 60 + outM - (inH * 60 + inM)) / 60).toFixed(2));
+
+    await UPDATE('com.employee.app.Attendance')
+      .set({ CheckOut: checkOut, WorkingHours: workingHours > 0 ? workingHours : 0 })
+      .where({ EmpId: empId, AttDate: today });
+
+    return `✅ Check-out recorded for ${empId} at ${checkOut}. Working hours: ${workingHours}h`;
+  });
+
   // ── BEFORE DELETE EMPLOYEE ───────────────
   srv.before('DELETE', 'Employees', async (req) => {
     const id  = req.params[0].ID;
