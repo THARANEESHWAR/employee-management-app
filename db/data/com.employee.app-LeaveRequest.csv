@@ -1,0 +1,4 @@
+ID,EmpId,LeaveType,FromDate,ToDate,NoOfDays,Reason,Status,ApprovedBy,Remarks
+33333333-3333-3333-3333-333333333001,E001,Casual,2024-01-15,2024-01-16,2,Personal work,Approved,E002,Approved by HR
+33333333-3333-3333-3333-333333333002,E005,Sick,2024-02-10,2024-02-12,3,Fever,Approved,E002,Medical leave approved
+33333333-3333-3333-3333-333333333003,E003,Earned,2024-03-05,2024-03-07,3,Vacation,Pending,,Awaiting approval

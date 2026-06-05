@@ -1,0 +1,67 @@
+### Test 1 - Get All Employees
+GET http://localhost:4004/odata/v4/employee/Employees
+Accept: application/json
+
+
+### Test 2 - Create Valid Employee
+POST http://localhost:4004/odata/v4/employee/Employees
+Content-Type: application/json
+
+{
+  "EmpId": "E006",
+  "EmpName": "Divya Nair",
+  "Department": "IT",
+  "Salary": 85000,
+  "Email": "divya@company.com",
+  "JoiningDate": "2023-01-15",
+  "IsActive": true
+}
+
+
+### Test 3 - Empty Name (Should Fail)
+POST http://localhost:4004/odata/v4/employee/Employees
+Content-Type: application/json
+
+{
+  "EmpId": "E007",
+  "EmpName": "",
+  "Department": "IT",
+  "Salary": 50000,
+  "Email": "test@company.com"
+}
+
+
+### Test 4 - Negative Salary (Should Fail)
+POST http://localhost:4004/odata/v4/employee/Employees
+Content-Type: application/json
+
+{
+  "EmpId": "E008",
+  "EmpName": "Test User",
+  "Department": "HR",
+  "Salary": -5000,
+  "Email": "test@company.com"
+}
+
+
+### Test 5 - Invalid Department (Should Fail)
+POST http://localhost:4004/odata/v4/employee/Employees
+Content-Type: application/json
+
+{
+  "EmpId": "E009",
+  "EmpName": "Test User",
+  "Department": "Dancing",
+  "Salary": 50000,
+  "Email": "test@company.com"
+}
+
+
+### Test 6 - Give Bonus
+POST http://localhost:4004/odata/v4/employee/giveBonus
+Content-Type: application/json
+
+{
+  "empId": "E001",
+  "bonusPercent": 20
+}

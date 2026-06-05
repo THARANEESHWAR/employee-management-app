@@ -1,0 +1,165 @@
+{
+	"_version": "1.84.0",
+	"sap.app": {
+		"id": "com.employee.employeelist",
+		"type": "application",
+		"i18n": {
+			"bundleUrl": "i18n/i18n.properties",
+			"supportedLocales": [
+				""
+			]
+		},
+		"applicationVersion": {
+			"version": "0.0.1"
+		},
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"resources": "resources.json",
+		"sourceTemplate": {
+			"id": "@sap/generator-fiori:lrop",
+			"version": "1.23.0",
+			"toolsId": "c36941cc-c69f-4967-95c8-44574577aa1f"
+		},
+		"dataSources": {
+			"mainService": {
+				"uri": "/odata/v4/employee/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "4.01",
+					"annotations": []
+				}
+			}
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"icons": {
+			"icon": "",
+			"favIcon": "",
+			"phone": "",
+			"phone@2": "",
+			"tablet": "",
+			"tablet@2": ""
+		},
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"flexEnabled": false,
+		"dependencies": {
+			"minUI5Version": "1.147.2",
+			"libs": {
+				"sap.m": {},
+				"sap.ui.core": {},
+				"sap.fe.templates": {}
+			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "com.employee.employeelist.i18n.i18n",
+					"supportedLocales": [
+						""
+					]
+				}
+			},
+			"": {
+				"dataSource": "mainService",
+				"preload": true,
+				"settings": {
+					"operationMode": "Server",
+					"autoExpandSelect": true,
+					"earlyRequests": true
+				}
+			},
+			"@i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"uri": "i18n/i18n.properties",
+				"settings": {
+					"supportedLocales": [
+						""
+					]
+				}
+			}
+		},
+		"routing": {
+			"config": {},
+			"routes": [
+				{
+					"pattern": ":?query:",
+					"name": "EmployeesList",
+					"target": "EmployeesList"
+				},
+				{
+					"pattern": "Employees({key}):?query:",
+					"name": "EmployeesObjectPage",
+					"target": "EmployeesObjectPage"
+				}
+			],
+			"targets": {
+				"EmployeesList": {
+					"type": "Component",
+					"id": "EmployeesList",
+					"name": "sap.fe.templates.ListReport",
+					"options": {
+						"settings": {
+							"contextPath": "/Employees",
+							"entitySet": "Employees",
+							"variantManagement": "Page",
+							"editableHeaderContent": false,
+							"initialLoad": true,
+							"navigation": {
+								"Employees": {
+									"detail": {
+										"route": "EmployeesObjectPage"
+									}
+								}
+							},
+							"controlConfiguration": {
+								"@com.sap.vocabularies.UI.v1.LineItem": {
+									"tableSettings": {
+										"type": "ResponsiveTable",
+										"selectionMode": "Multi",
+										"creationMode": {
+											"name": "Page",
+											"createAtEnd": false
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"EmployeesObjectPage": {
+					"type": "Component",
+					"id": "EmployeesObjectPage",
+					"name": "sap.fe.templates.ObjectPage",
+					"options": {
+						"settings": {
+							"contextPath": "/Employees",
+							"editableHeaderContent": false
+						}
+					}
+				}
+			}
+		},
+		"sap.fiori": {
+			"registrationIds": [],
+			"archeType": "transactional"
+		},
+		"sap.fe": {
+			"app": {
+				"enableLazyLoading": true
+			}
+		},
+		"flexBundle": false
+	}
+}

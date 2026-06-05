@@ -1,0 +1,20 @@
+specVersion: '3.0'
+metadata:
+  name: com.employee.employeelist
+type: application
+framework:
+  name: SAPUI5
+  version: "1.136.0"
+  libraries:
+    - name: sap.m
+    - name: sap.ui.core
+    - name: sap.ushell
+    - name: sap.fe.templates
+    - name: themelib_sap_horizon
+server:
+  customMiddleware:
+    - name: ui5-middleware-simpleproxy
+      afterMiddleware: compression
+      mountPath: /odata/v4/
+      configuration:
+        baseUri: http://localhost:4004/odata/v4/

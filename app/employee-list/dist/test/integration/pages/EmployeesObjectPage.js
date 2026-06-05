@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/ObjectPage","sap/ui/test/actions/Press"],function(e,t){"use strict";var n={actions:{iPressSectionIconTabFilterButton:function(e){return this.waitFor({id:new RegExp(`.*--fe::FacetSection::${e}-anchor$`),actions:new t})}},assertions:{}};return new e({appId:"com.employee.employeelist",componentId:"EmployeesObjectPage",contextPath:"/Employees"},n)});
+//# sourceMappingURL=EmployeesObjectPage.js.map

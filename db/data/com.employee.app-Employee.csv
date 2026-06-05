@@ -1,0 +1,6 @@
+ID,EmpId,FirstName,LastName,FullName,Gender,DateOfBirth,Email,Phone,Designation,DeptId,JoiningDate,Salary,Status,LeaveBalance,IsActive
+11111111-1111-1111-1111-111111111001,E001,Rahul,Sharma,Rahul Sharma,Male,1995-05-10,rahul@company.com,9876543210,Senior Developer,D001,2021-01-10,75000,Active,18,true
+11111111-1111-1111-1111-111111111002,E002,Priya,Patel,Priya Patel,Female,1997-08-22,priya@company.com,9876543211,HR Manager,D002,2020-05-15,60000,Active,20,true
+11111111-1111-1111-1111-111111111003,E003,Amit,Kumar,Amit Kumar,Male,1993-03-15,amit@company.com,9876543212,Finance Analyst,D003,2019-03-20,80000,Active,15,true
+11111111-1111-1111-1111-111111111004,E004,Sneha,Reddy,Sneha Reddy,Female,1998-11-30,sneha@company.com,9876543213,UI Developer,D001,2022-07-01,90000,Active,20,true
+11111111-1111-1111-1111-111111111005,E005,Ravi,Singh,Ravi Singh,Male,1996-06-18,ravi@company.com,9876543214,HR Executive,D002,2021-11-25,55000,On Leave,12,true
