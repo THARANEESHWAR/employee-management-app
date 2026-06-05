@@ -11,7 +11,9 @@ service EmployeeService {
         to_SalaryHistory     as SalaryHistories,
         to_LeaveRequests     as LeaveRequests,
         to_Attendance        as Attendances,
-        to_Payroll           as Payrolls
+        to_Payroll           as Payrolls,
+        virtual null         as SalaryGrade : String,
+        virtual null         as Experience  : String
     }
 
     @readonly
@@ -37,5 +39,8 @@ service EmployeeService {
            returns String;
 
     action markAttendance(empId : String, status : String)
+           returns String;
+
+    action checkOut(empId : String)
            returns String;
 }

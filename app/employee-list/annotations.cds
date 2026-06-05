@@ -51,7 +51,17 @@ annotate service.LeaveRequests with @(
         { $Type: 'UI.DataField', Value: ToDate,    Label: '📅 To Date'    },
         { $Type: 'UI.DataField', Value: NoOfDays,  Label: '🔢 Days'       },
         { $Type: 'UI.DataField', Value: Status,    Label: '📌 Status'     },
-        { $Type: 'UI.DataField', Value: Reason,    Label: '📝 Reason'     }
+        { $Type: 'UI.DataField', Value: Reason,    Label: '📝 Reason'     },
+        {
+            $Type  : 'UI.DataFieldForAction',
+            Label  : '✅ Approve Leave',
+            Action : 'EmployeeService.approveLeave'
+        },
+        {
+            $Type  : 'UI.DataFieldForAction',
+            Label  : '❌ Reject Leave',
+            Action : 'EmployeeService.rejectLeave'
+        }
     ]
 );
 
@@ -61,7 +71,37 @@ annotate service.Attendances with @(
         { $Type: 'UI.DataField', Value: AttStatus,    Label: '📌 Status'        },
         { $Type: 'UI.DataField', Value: CheckIn,      Label: '🟢 Check In'      },
         { $Type: 'UI.DataField', Value: CheckOut,     Label: '🔴 Check Out'     },
-        { $Type: 'UI.DataField', Value: WorkingHours, Label: '⏱️ Working Hours' }
+        { $Type: 'UI.DataField', Value: WorkingHours, Label: '⏱️ Working Hours' },
+        {
+            $Type  : 'UI.DataFieldForAction',
+            Label  : '🟢 Mark Attendance',
+            Action : 'EmployeeService.markAttendance'
+        },
+        {
+            $Type  : 'UI.DataFieldForAction',
+            Label  : '🔴 Check Out',
+            Action : 'EmployeeService.checkOut'
+        }
+    ]
+);
+
+// ── PAYROLL LINE ITEM ───────────────────────────
+annotate service.Payrolls with @(
+    UI.LineItem: [
+        { $Type: 'UI.DataField', Value: PayMonth,    Label: '📅 Pay Month'      },
+        { $Type: 'UI.DataField', Value: BasicSalary, Label: '💰 Basic Salary'   },
+        { $Type: 'UI.DataField', Value: HRA,         Label: '🏠 HRA'            },
+        { $Type: 'UI.DataField', Value: Allowances,  Label: '➕ Allowances'     },
+        { $Type: 'UI.DataField', Value: Deductions,  Label: '➖ Deductions'     },
+        { $Type: 'UI.DataField', Value: Tax,         Label: '🧾 Tax'            },
+        { $Type: 'UI.DataField', Value: NetSalary,   Label: '💵 Net Salary'     },
+        { $Type: 'UI.DataField', Value: PayStatus,   Label: '📌 Pay Status'     },
+        { $Type: 'UI.DataField', Value: PaymentDate, Label: '📅 Payment Date'   },
+        {
+            $Type  : 'UI.DataFieldForAction',
+            Label  : '💸 Process Payroll',
+            Action : 'EmployeeService.processPayroll'
+        }
     ]
 );
 
@@ -81,6 +121,8 @@ annotate service.Employees with @(
         { $Type: 'UI.DataField', Value: Designation,    Label: '💼 Designation'   },
         { $Type: 'UI.DataField', Value: DepartmentName, Label: '🏢 Department'    },
         { $Type: 'UI.DataField', Value: Salary,         Label: '💰 Salary (₹)'   },
+        { $Type: 'UI.DataField', Value: SalaryGrade,    Label: '🏅 Salary Grade'  },
+        { $Type: 'UI.DataField', Value: Experience,     Label: '📆 Experience'    },
         { $Type: 'UI.DataField', Value: Status,         Label: '📌 Status'        },
         { $Type: 'UI.DataField', Value: LeaveBalance,   Label: '🏖️ Leave Balance' }
     ],
@@ -119,7 +161,9 @@ annotate service.Employees with @(
         Data : [
             { $Type: 'UI.DataField', Value: Salary,       Label: '💰 Salary (₹)'   },
             { $Type: 'UI.DataField', Value: JoiningDate,  Label: '📅 Joining Date'  },
-            { $Type: 'UI.DataField', Value: LeaveBalance, Label: '🏖️ Leave Balance' }
+            { $Type: 'UI.DataField', Value: LeaveBalance, Label: '🏖️ Leave Balance' },
+            { $Type: 'UI.DataField', Value: SalaryGrade,  Label: '🏅 Salary Grade'  },
+            { $Type: 'UI.DataField', Value: Experience,   Label: '📆 Experience'    }
         ]
     },
 
@@ -153,6 +197,12 @@ annotate service.Employees with @(
             ID    : 'AttendanceHistory',
             Label : '📋 Attendance',
             Target: 'Attendances/@UI.LineItem'
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'PayrollHistory',
+            Label : '💸 Payroll',
+            Target: 'Payrolls/@UI.LineItem'
         }
     ],
 
