@@ -29,19 +29,19 @@ https://9450e8eatrial-dev-employee-app.cfapps.us10-001.hana.ondemand.com
 - 5-tab Object Page with full enterprise UI
 
 ## 📁 Project Structure
-\`\`\`
+```
 employee-app/
 ├── db/
-│   ├── schema.cds        ← 6 entities + 5 enums
-│   └── data/             ← CSV seed data
+│   ├── schema.cds         ← 6 entities + 5 enums
+│   └── data/              ← CSV seed data
 ├── srv/
 │   ├── employee-service.cds  ← OData V4 service
 │   └── employee-service.js   ← Business logic
 ├── app/
-│   └── employee-list/    ← Fiori Elements UI
-├── mta.yaml              ← BTP deployment config
+│   └── employee-list/     ← Fiori Elements UI
+├── mta.yaml               ← BTP deployment config
 └── package.json
-\`\`\`
+```
 
 ## 👨‍💻 Author
 **Tharaneeshwar S**  
