@@ -118,6 +118,7 @@
                   "tableSettings": {
                     "type": "ResponsiveTable",
                     "selectionMode": "Multi",
+                    "enableExport": true,
                     "creationMode": {
                       "name": "NewPage",
                       "createAtEnd": false

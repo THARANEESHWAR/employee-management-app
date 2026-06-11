@@ -173,10 +173,10 @@ module.exports = (srv) => {
 
       // Salary Grade
       if (emp.Salary) {
-        if      (emp.Salary >= 90000) emp.SalaryGrade = '⭐ Grade A';
-        else if (emp.Salary >= 70000) emp.SalaryGrade = '🔵 Grade B';
-        else if (emp.Salary >= 50000) emp.SalaryGrade = '🟢 Grade C';
-        else                          emp.SalaryGrade = '🟡 Grade D';
+        if      (emp.Salary >= 90000) emp.SalaryGrade = 'Grade A';
+        else if (emp.Salary >= 70000) emp.SalaryGrade = 'Grade B';
+        else if (emp.Salary >= 50000) emp.SalaryGrade = 'Grade C';
+        else                          emp.SalaryGrade = 'Grade D';
       } else {
         emp.SalaryGrade = null;
       }
@@ -229,9 +229,10 @@ module.exports = (srv) => {
     }
   });
 
-  // ── ACTION: APPROVE LEAVE ────────────────
-  srv.on('approveLeave', async (req) => {
-    const { leaveId, remarks } = req.data;
+  // ── BOUND ACTION: APPROVE LEAVE ──────────
+  srv.on('approve', 'LeaveRequests', async (req) => {
+    const { remarks } = req.data;
+    const leaveId = req.params[req.params.length - 1]?.ID;
 
     const leave = await SELECT.one
       .from('com.employee.app.LeaveRequest')
@@ -244,11 +245,22 @@ module.exports = (srv) => {
       return req.error(400, `Leave is already ${leave.Status}`);
     }
 
-    // Update leave status
+    // Guard: never let the balance go negative
+    const emp = await SELECT.one
+      .from('com.employee.app.Employee')
+      .where({ EmpId: leave.EmpId });
+    if (emp && emp.LeaveBalance < leave.NoOfDays) {
+      return req.error(400,
+        `Cannot approve: ${leave.EmpId} has only ${emp.LeaveBalance} day(s) left, ` +
+        `but this request needs ${leave.NoOfDays} day(s)`
+      );
+    }
+
+    // Update leave status — ApprovedBy is the real logged-in user
     await UPDATE('com.employee.app.LeaveRequest')
       .set({
         Status      : 'Approved',
-        ApprovedBy  : req.user?.id || 'Manager',
+        ApprovedBy  : req.user.id,
         ApprovedDate: new Date().toISOString().split('T')[0],
         Remarks     : remarks || 'Approved'
       })
@@ -259,12 +271,13 @@ module.exports = (srv) => {
       .set({ LeaveBalance: { '-=': leave.NoOfDays } })
       .where({ EmpId: leave.EmpId });
 
-    return `✅ Leave approved for ${leave.EmpId}. ${leave.NoOfDays} days deducted.`;
+    return `Leave approved for ${leave.EmpId}. ${leave.NoOfDays} day(s) deducted.`;
   });
 
-  // ── ACTION: REJECT LEAVE ─────────────────
-  srv.on('rejectLeave', async (req) => {
-    const { leaveId, remarks } = req.data;
+  // ── BOUND ACTION: REJECT LEAVE ───────────
+  srv.on('reject', 'LeaveRequests', async (req) => {
+    const { remarks } = req.data;
+    const leaveId = req.params[req.params.length - 1]?.ID;
 
     const leave = await SELECT.one
       .from('com.employee.app.LeaveRequest')
@@ -277,17 +290,43 @@ module.exports = (srv) => {
 
     await UPDATE('com.employee.app.LeaveRequest')
       .set({
-        Status  : 'Rejected',
-        Remarks : remarks || 'Rejected by Manager'
+        Status      : 'Rejected',
+        ApprovedBy  : req.user.id,
+        ApprovedDate: new Date().toISOString().split('T')[0],
+        Remarks     : remarks || 'Rejected'
       })
       .where({ ID: leaveId });
 
-    return `❌ Leave rejected for ${leave.EmpId}`;
+    return `Leave rejected for ${leave.EmpId}`;
+  });
+
+  // ── BOUND ACTION: CANCEL LEAVE ───────────
+  srv.on('cancel', 'LeaveRequests', async (req) => {
+    const leaveId = req.params[req.params.length - 1]?.ID;
+
+    const leave = await SELECT.one
+      .from('com.employee.app.LeaveRequest')
+      .where({ ID: leaveId });
+
+    if (!leave) return req.error(404, 'Leave request not found');
+    if (leave.Status !== 'Pending') {
+      return req.error(400, `Only Pending requests can be cancelled (current: ${leave.Status})`);
+    }
+
+    await UPDATE('com.employee.app.LeaveRequest')
+      .set({ Status: 'Cancelled', Remarks: 'Cancelled by ' + req.user.id })
+      .where({ ID: leaveId });
+
+    return `Leave request cancelled for ${leave.EmpId}`;
   });
 
   // ── ACTION: PROCESS PAYROLL ──────────────
   srv.on('processPayroll', async (req) => {
     const { empId, payMonth } = req.data;
+
+    if (!payMonth || !/^\d{4}-(0[1-9]|1[0-2])$/.test(payMonth)) {
+      return req.error(400, 'Pay month must be in YYYY-MM format, e.g. 2026-06');
+    }
 
     const emp = await SELECT.one
       .from('com.employee.app.Employee')
@@ -295,12 +334,15 @@ module.exports = (srv) => {
 
     if (!emp) return req.error(404, `Employee ${empId} not found`);
 
-    const basic      = emp.Salary;
-    const hra        = Math.round(basic * 0.20);
-    const allowances = Math.round(basic * 0.10);
-    const deductions = Math.round(basic * 0.02);
-    const tax        = Math.round(basic * 0.10);
-    const netSalary  = basic + hra + allowances - deductions - tax;
+    // Salary is the gross — split into components, then deduct.
+    // Net is always less than gross.
+    const gross      = emp.Salary;
+    const basic      = Math.round(gross * 0.50);
+    const hra        = Math.round(gross * 0.20);
+    const allowances = gross - basic - hra;          // remaining 30%
+    const tax        = Math.round(gross * 0.10);
+    const deductions = Math.round(gross * 0.02);     // PF etc.
+    const netSalary  = gross - tax - deductions;
 
     // Check if payroll already processed
     const existing = await SELECT.one
@@ -325,12 +367,17 @@ module.exports = (srv) => {
       PayStatus   : 'Paid'
     });
 
-    return `✅ Payroll processed for ${empId}. Net Salary: ₹${netSalary}`;
+    return `Payroll processed for ${empId}. Net Salary: ${netSalary} INR`;
   });
 
   // ── ACTION: MARK ATTENDANCE ──────────────
   srv.on('markAttendance', async (req) => {
     const { empId, status } = req.data;
+
+    const validStatuses = ['Present', 'Absent', 'Half Day', 'On Leave', 'Holiday'];
+    if (status && !validStatuses.includes(status)) {
+      return req.error(400, `Invalid status. Allowed: ${validStatuses.join(', ')}`);
+    }
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -354,7 +401,7 @@ module.exports = (srv) => {
       WorkingHours: 0
     });
 
-    return `✅ Attendance marked for ${empId} on ${today}`;
+    return `Attendance marked for ${empId} on ${today}`;
   });
 
   // ── ACTION: CHECK OUT ───────────────────
@@ -384,26 +431,26 @@ module.exports = (srv) => {
       .set({ CheckOut: checkOut, WorkingHours: workingHours > 0 ? workingHours : 0 })
       .where({ EmpId: empId, AttDate: today });
 
-    return `✅ Check-out recorded for ${empId} at ${checkOut}. Working hours: ${workingHours}h`;
+    return `Check-out recorded for ${empId} at ${checkOut}. Working hours: ${workingHours}h`;
   });
 
-  // ── BEFORE DELETE EMPLOYEE ───────────────
-  srv.before('DELETE', 'Employees', async (req) => {
-    const id  = req.params[0].ID;
+  // ── ON DELETE EMPLOYEE (SOFT DELETE) ─────
+  // Intercepts the delete entirely: marks the employee as Resigned
+  // and returns success, so the UI shows a normal confirmation
+  // instead of an error.
+  srv.on('DELETE', 'Employees', async (req) => {
+    const id  = req.params[req.params.length - 1]?.ID || req.data.ID;
     const emp = await SELECT.one
       .from('com.employee.app.Employee')
       .where({ ID: id });
 
     if (!emp) return req.error(404, 'Employee not found');
 
-    // Soft delete — set inactive instead
     await UPDATE('com.employee.app.Employee')
       .set({ Status: 'Resigned', IsActive: false })
       .where({ ID: id });
 
-    req.error(400,
-      `Employee ${emp.EmpId} marked as Resigned instead of deleted (Soft Delete)`
-    );
+    req.notify(`Employee ${emp.EmpId} marked as Resigned (records are kept for history)`);
   });
 
 };
