@@ -18,7 +18,23 @@
   },
   "cds": {
     "requires": {
-      "auth": "dummy"
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "admin": {
+            "password": "admin@123",
+            "roles": ["HRAdmin", "Manager"]
+          },
+          "manager": {
+            "password": "manager@123",
+            "roles": ["Manager"]
+          },
+          "employee": {
+            "password": "employee@123",
+            "roles": ["Employee"]
+          }
+        }
+      }
     }
   },
   "workspaces": [

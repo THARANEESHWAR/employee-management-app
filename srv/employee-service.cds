@@ -1,9 +1,14 @@
 using com.employee.app as db from '../db/schema';
 
 @path: 'employee'
+@requires: 'authenticated-user'
 service EmployeeService {
 
     @odata.draft.enabled: true
+    @restrict: [
+        { grant: 'READ',                         to: 'authenticated-user' },
+        { grant: ['CREATE', 'UPDATE', 'DELETE'], to: 'HRAdmin' }
+    ]
     entity Employees as projection on db.Employee {
         *,
         Department.DeptName  as DepartmentName,
@@ -16,25 +21,39 @@ service EmployeeService {
         virtual null         as Experience  : String
     }
 
-    @readonly
+    @restrict: [
+        { grant: 'READ',  to: 'authenticated-user' },
+        { grant: 'WRITE', to: 'HRAdmin' }
+    ]
     entity Departments    as projection on db.Department;
 
+    @restrict: [
+        { grant: '*', to: ['HRAdmin', 'Manager'] }
+    ]
     entity SalaryHistories as projection on db.SalaryHistory;
 
     @odata.draft.enabled: true
-    entity LeaveRequests   as projection on db.LeaveRequest;
+    entity LeaveRequests   as projection on db.LeaveRequest
+        actions {
+            @(requires: ['Manager', 'HRAdmin'])
+            action approve(remarks : String) returns String;
+
+            @(requires: ['Manager', 'HRAdmin'])
+            action reject(remarks : String)  returns String;
+
+            @Common.IsActionCritical: true
+            action cancel()                  returns String;
+        };
 
     entity Attendances     as projection on db.Attendance;
 
+    @restrict: [
+        { grant: '*', to: ['HRAdmin', 'Manager'] }
+    ]
     entity Payrolls        as projection on db.Payroll;
 
     // Custom Actions
-    action approveLeave(leaveId : String, remarks : String)
-           returns String;
-
-    action rejectLeave(leaveId : String, remarks : String)
-           returns String;
-
+    @requires: ['HRAdmin']
     action processPayroll(empId : String, payMonth : String)
            returns String;
 
