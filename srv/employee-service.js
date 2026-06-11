@@ -151,16 +151,34 @@ module.exports = (srv) => {
     }
   });
 
+  // ── BEFORE READ EMPLOYEE ─────────────────
+  // Virtual fields need Salary/JoiningDate to be computed,
+  // but the UI does not always $select them — add them to the query
+  srv.before('READ', 'Employees', (req) => {
+    const cols = req.query.SELECT?.columns;
+    if (!cols) return;
+    const has = (name) =>
+      cols.some(c => c === '*' || (c.ref && c.ref[c.ref.length - 1] === name));
+    if (!has('SalaryGrade') && !has('Experience')) return;
+    for (const dep of ['Salary', 'JoiningDate']) {
+      if (!has(dep)) cols.push({ ref: [dep] });
+    }
+  });
+
   // ── AFTER READ EMPLOYEE ──────────────────
   srv.after('READ', 'Employees', (data) => {
     const list = Array.isArray(data) ? data : [data];
     list.forEach(emp => {
+      if (!emp) return;
+
       // Salary Grade
       if (emp.Salary) {
         if      (emp.Salary >= 90000) emp.SalaryGrade = '⭐ Grade A';
         else if (emp.Salary >= 70000) emp.SalaryGrade = '🔵 Grade B';
         else if (emp.Salary >= 50000) emp.SalaryGrade = '🟢 Grade C';
         else                          emp.SalaryGrade = '🟡 Grade D';
+      } else {
+        emp.SalaryGrade = null;
       }
 
       // Experience in years
@@ -169,6 +187,8 @@ module.exports = (srv) => {
           (new Date() - new Date(emp.JoiningDate)) / (365.25 * 24 * 60 * 60 * 1000)
         );
         emp.Experience = `${years} year(s)`;
+      } else {
+        emp.Experience = null;
       }
     });
   });
