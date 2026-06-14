@@ -1,6 +1,7 @@
 {
   "welcomeFile": "/webapp/index.html",
   "authenticationMethod": "route",
+  "identityProvider": "sap.default",
   "routes": [
     {
       "source": "^/odata/(.*)$",
