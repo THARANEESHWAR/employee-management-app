@@ -66,7 +66,7 @@ annotate service.Employees with {
 annotate service.Employees with @(
     Aggregation.ApplySupported: {
         Transformations       : ['aggregate', 'groupby', 'filter'],
-        GroupableProperties   : [Status, DepartmentName, SalaryGrade, Gender, DeptId],
+        GroupableProperties   : [Status, Gender, DeptId],
         AggregatableProperties: [
             { Property: Salary      },
             { Property: LeaveBalance }
@@ -99,20 +99,20 @@ annotate service.Employees with @(
         $Type              : 'UI.ChartDefinitionType',
         Title              : 'Salary by Department',
         ChartType          : #Bar,
-        Dimensions         : [DepartmentName],
-        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: DepartmentName, Role: #Category }],
+        Dimensions         : [DeptId],
+        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: DeptId, Role: #Category }],
         Measures           : [Salary],
-        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:   Salary,         Role: #Axis1    }]
+        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:  Salary,  Role: #Axis1   }]
     },
 
-    UI.Chart #BySalaryGrade: {
+    UI.Chart #ByGender: {
         $Type              : 'UI.ChartDefinitionType',
-        Title              : 'Employees by Salary Grade',
-        ChartType          : #Bar,
-        Dimensions         : [SalaryGrade],
-        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: SalaryGrade,    Role: #Category }],
+        Title              : 'Employees by Gender',
+        ChartType          : #Donut,
+        Dimensions         : [Gender],
+        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: Gender, Role: #Category }],
         Measures           : [Salary],
-        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:   Salary,         Role: #Axis1    }]
+        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:  Salary,  Role: #Axis1   }]
     },
 
     // ── Analytics: Default chart used in List Report ─────────────
@@ -126,10 +126,18 @@ annotate service.Employees with @(
         MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:   Salary, Role: #Axis1    }]
     },
 
+    // ── Analytics: Table-only PresentationVariant (for tab label) ──
+    UI.PresentationVariant #TableOnly: {
+        $Type         : 'UI.PresentationVariantType',
+        Text          : 'Table',
+        SortOrder     : [{ $Type: 'Common.SortOrderType', Property: EmpId, Descending: false }],
+        Visualizations: ['@UI.LineItem']
+    },
+
     // ── Analytics: PresentationVariant — chart + table combined ──
     UI.PresentationVariant: {
         $Type         : 'UI.PresentationVariantType',
-        Text          : 'Default',
+        Text          : 'Analytics',
         SortOrder     : [{ $Type: 'Common.SortOrderType', Property: EmpId, Descending: false }],
         Visualizations: ['@UI.Chart', '@UI.LineItem']
     },

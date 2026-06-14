@@ -119,13 +119,11 @@
                 "paths": [
                   {
                     "key": "table",
-                    "annotationPath": "com.sap.vocabularies.UI.v1.LineItem",
-                    "label": "Table"
+                    "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant#TableOnly"
                   },
                   {
-                    "key": "chart",
-                    "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant",
-                    "label": "Chart"
+                    "key": "analytics",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
                   }
                 ]
               },
