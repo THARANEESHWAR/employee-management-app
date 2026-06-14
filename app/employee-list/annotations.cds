@@ -236,6 +236,6 @@ annotate service.Employees with @(
     Capabilities.DeleteRestrictions: { Deletable : true },
 
     UI.CreateHidden: false,
-    UI.UpdateHidden: false,
-    UI.DeleteHidden: false
+    UI.UpdateHidden: { $edmJson: { $Not: { $Path: 'IsEditable' } } },
+    UI.DeleteHidden: { $edmJson: { $Not: { $Path: 'IsEditable' } } }
 );

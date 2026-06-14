@@ -166,10 +166,12 @@ module.exports = (srv) => {
   });
 
   // ── AFTER READ EMPLOYEE ──────────────────
-  srv.after('READ', 'Employees', (data) => {
+  srv.after('READ', 'Employees', (data, req) => {
+    const isAdmin = req.user?.is('HRAdmin');
     const list = Array.isArray(data) ? data : [data];
     list.forEach(emp => {
       if (!emp) return;
+      emp.IsEditable = !!isAdmin;
 
       // Salary Grade
       if (emp.Salary) {

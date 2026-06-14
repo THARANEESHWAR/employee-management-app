@@ -18,7 +18,8 @@ service EmployeeService {
         to_Attendance        as Attendances,
         to_Payroll           as Payrolls,
         virtual null         as SalaryGrade : String,
-        virtual null         as Experience  : String
+        virtual null         as Experience  : String,
+        virtual null         as IsEditable  : Boolean
     }
 
     @restrict: [
