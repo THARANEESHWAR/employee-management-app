@@ -436,6 +436,51 @@ module.exports = (srv) => {
     return `Check-out recorded for ${empId} at ${checkOut}. Working hours: ${workingHours}h`;
   });
 
+  // ── BOUND ACTION: MARK ATTENDANCE (from Employee object page) ──
+  srv.on('markAttendanceBound', 'Employees', async (req) => {
+    const { status } = req.data;
+    const id = req.params[req.params.length - 1]?.ID;
+    const emp = await SELECT.one.from('com.employee.app.Employee').where({ ID: id });
+    if (!emp) return req.error(404, 'Employee not found');
+
+    const validStatuses = ['Present', 'Absent', 'Half Day', 'On Leave', 'Holiday'];
+    if (status && !validStatuses.includes(status)) {
+      return req.error(400, `Invalid status. Allowed: ${validStatuses.join(', ')}`);
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const existing = await SELECT.one.from('com.employee.app.Attendance').where({ EmpId: emp.EmpId, AttDate: today });
+    if (existing) return req.error(400, `Attendance already marked for ${emp.EmpId} today`);
+
+    const checkIn = new Date().toTimeString().split(' ')[0].slice(0, 5);
+    await INSERT.into('com.employee.app.Attendance').entries({
+      ID: require('crypto').randomUUID(),
+      EmpId: emp.EmpId, AttDate: today,
+      AttStatus: status || 'Present', CheckIn: checkIn, CheckOut: '', WorkingHours: 0
+    });
+    return `Attendance marked for ${emp.EmpId} on ${today}`;
+  });
+
+  // ── BOUND ACTION: CHECK OUT (from Employee object page) ─────────
+  srv.on('checkOutBound', 'Employees', async (req) => {
+    const id = req.params[req.params.length - 1]?.ID;
+    const emp = await SELECT.one.from('com.employee.app.Employee').where({ ID: id });
+    if (!emp) return req.error(404, 'Employee not found');
+
+    const today = new Date().toISOString().split('T')[0];
+    const record = await SELECT.one.from('com.employee.app.Attendance').where({ EmpId: emp.EmpId, AttDate: today });
+    if (!record) return req.error(400, `No attendance record found for ${emp.EmpId} today`);
+    if (record.CheckOut) return req.error(400, `${emp.EmpId} already checked out at ${record.CheckOut}`);
+
+    const checkOut = new Date().toTimeString().split(' ')[0].slice(0, 5);
+    const [inH, inM]   = record.CheckIn.split(':').map(Number);
+    const [outH, outM] = checkOut.split(':').map(Number);
+    const workingHours = parseFloat(((outH * 60 + outM - (inH * 60 + inM)) / 60).toFixed(2));
+    await UPDATE('com.employee.app.Attendance')
+      .set({ CheckOut: checkOut, WorkingHours: workingHours > 0 ? workingHours : 0 })
+      .where({ EmpId: emp.EmpId, AttDate: today });
+    return `Check-out recorded for ${emp.EmpId} at ${checkOut}. Working hours: ${workingHours}h`;
+  });
+
   // ── ON DELETE EMPLOYEE (SOFT DELETE) ─────
   // Intercepts the delete entirely: marks the employee as Resigned
   // and returns success, so the UI shows a normal confirmation

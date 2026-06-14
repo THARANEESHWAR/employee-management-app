@@ -100,12 +100,12 @@ annotate service.Attendances with @(
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Mark Attendance',
-            Action : 'EmployeeService.markAttendance'
+            Action : 'EmployeeService.Employees/EmployeeService.markAttendanceBound'
         },
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Check Out',
-            Action : 'EmployeeService.checkOut'
+            Action : 'EmployeeService.Employees/EmployeeService.checkOutBound'
         }
     ]
 );

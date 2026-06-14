@@ -58,9 +58,16 @@ service EmployeeService {
     action processPayroll(empId : String, payMonth : String)
            returns String;
 
+    // Unbound versions (kept for API compatibility)
     action markAttendance(empId : String, status : String)
            returns String;
 
     action checkOut(empId : String)
            returns String;
+
+    // Bound versions on Employees — empId is auto-known from context
+    extend entity Employees with actions {
+        action markAttendanceBound(status : String) returns String;
+        action checkOutBound()                      returns String;
+    }
 }
