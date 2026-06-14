@@ -152,27 +152,30 @@ module.exports = (srv) => {
   });
 
   // ── BEFORE READ EMPLOYEE ─────────────────
-  // Virtual fields need Salary/JoiningDate to be computed,
-  // but the UI does not always $select them — add them to the query
+  // Inject dependent fields needed by virtual field computation
   srv.before('READ', 'Employees', (req) => {
     const cols = req.query.SELECT?.columns;
     if (!cols) return;
     const has = (name) =>
       cols.some(c => c === '*' || (c.ref && c.ref[c.ref.length - 1] === name));
-    if (!has('SalaryGrade') && !has('Experience')) return;
-    for (const dep of ['Salary', 'JoiningDate']) {
+    if (!has('SalaryGrade') && !has('Experience') && !has('StatusCriticality')) return;
+    for (const dep of ['Salary', 'JoiningDate', 'Status']) {
       if (!has(dep)) cols.push({ ref: [dep] });
     }
   });
 
   // ── AFTER READ EMPLOYEE ──────────────────
+  const empStatusCrit = { 'Active': 3, 'On Leave': 2, 'Resigned': 1, 'Inactive': 0 };
+
   srv.after('READ', 'Employees', (data, req) => {
     const isAdmin = req.user?.is('HRAdmin');
     const list = Array.isArray(data) ? data : [data];
     list.forEach(emp => {
       if (!emp) return;
-      emp.IsEditable = !!isAdmin;
-      emp.IsAdmin    = !!isAdmin;
+      emp.IsEditable         = !!isAdmin;
+      emp.IsAdmin            = !!isAdmin;
+      emp.Currency           = 'INR';
+      emp.StatusCriticality  = empStatusCrit[emp.Status] ?? 0;
 
       // Salary Grade
       if (emp.Salary) {
@@ -193,6 +196,37 @@ module.exports = (srv) => {
       } else {
         emp.Experience = null;
       }
+    });
+  });
+
+  // ── AFTER READ LEAVE REQUESTS ────────────
+  const leaveStatusCrit = { 'Approved': 3, 'Pending': 2, 'Rejected': 1, 'Cancelled': 0 };
+  srv.after('READ', 'LeaveRequests', (data) => {
+    const list = Array.isArray(data) ? data : [data];
+    list.forEach(r => { if (r) r.StatusCriticality = leaveStatusCrit[r.Status] ?? 0; });
+  });
+
+  // ── AFTER READ ATTENDANCES ───────────────
+  const attStatusCrit = { 'Present': 3, 'Half Day': 2, 'On Leave': 2, 'Absent': 1, 'Holiday': 0 };
+  srv.after('READ', 'Attendances', (data) => {
+    const list = Array.isArray(data) ? data : [data];
+    list.forEach(r => { if (r) r.StatusCriticality = attStatusCrit[r.AttStatus] ?? 0; });
+  });
+
+  // ── AFTER READ SALARY HISTORIES ──────────
+  srv.after('READ', 'SalaryHistories', (data) => {
+    const list = Array.isArray(data) ? data : [data];
+    list.forEach(r => { if (r) r.Currency = 'INR'; });
+  });
+
+  // ── AFTER READ PAYROLLS ──────────────────
+  const payStatusCrit = { 'Paid': 3, 'Pending': 2, 'Failed': 1 };
+  srv.after('READ', 'Payrolls', (data) => {
+    const list = Array.isArray(data) ? data : [data];
+    list.forEach(r => {
+      if (!r) return;
+      r.Currency       = 'INR';
+      r.PayCriticality = payStatusCrit[r.PayStatus] ?? 0;
     });
   });
 
