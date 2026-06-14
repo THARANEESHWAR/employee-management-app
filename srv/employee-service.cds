@@ -19,7 +19,8 @@ service EmployeeService {
         to_Payroll           as Payrolls,
         virtual null         as SalaryGrade : String,
         virtual null         as Experience  : String,
-        virtual null         as IsEditable  : Boolean
+        virtual null         as IsEditable  : Boolean,
+        virtual null         as IsAdmin     : Boolean
     }
 
     @restrict: [
@@ -40,7 +41,7 @@ service EmployeeService {
             action approve(remarks : String) returns String;
 
             @(requires: ['Manager', 'HRAdmin'])
-            action reject(remarks : String)  returns String;
+            action rejectLeave(remarks : String)  returns String;
 
             @Common.IsActionCritical: true
             action cancel()                  returns String;

@@ -51,7 +51,7 @@ annotate service.LeaveRequests with actions {
             $edmJson: { $Eq: [ { $Path: 'in/Status' }, 'Pending' ] }
         }
     );
-    reject @(
+    rejectLeave @(
         Core.OperationAvailable: {
             $edmJson: { $Eq: [ { $Path: 'in/Status' }, 'Pending' ] }
         }
@@ -80,7 +80,7 @@ annotate service.LeaveRequests with @(
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Reject',
-            Action : 'EmployeeService.reject'
+            Action : 'EmployeeService.rejectLeave'
         },
         {
             $Type  : 'UI.DataFieldForAction',
@@ -238,4 +238,5 @@ annotate service.Employees with @(
     UI.CreateHidden: false,
     UI.UpdateHidden: { $edmJson: { $Not: { $Path: 'IsEditable' } } },
     UI.DeleteHidden: { $edmJson: { $Not: { $Path: 'IsEditable' } } }
+
 );

@@ -172,6 +172,7 @@ module.exports = (srv) => {
     list.forEach(emp => {
       if (!emp) return;
       emp.IsEditable = !!isAdmin;
+      emp.IsAdmin    = !!isAdmin;
 
       // Salary Grade
       if (emp.Salary) {
@@ -290,7 +291,7 @@ module.exports = (srv) => {
   });
 
   // ── BOUND ACTION: REJECT LEAVE ───────────
-  srv.on('reject', 'LeaveRequests', async (req) => {
+  srv.on('rejectLeave', 'LeaveRequests', async (req) => {
     const { remarks } = req.data;
     const leaveId = req.params[req.params.length - 1]?.ID;
 
@@ -348,6 +349,11 @@ module.exports = (srv) => {
       .where({ EmpId: empId });
 
     if (!emp) return req.error(404, `Employee ${empId} not found`);
+
+    // #8 Block payroll for resigned/inactive employees
+    if (!emp.IsActive || emp.Status === 'Resigned') {
+      return req.error(400, `Cannot process payroll for ${empId}: employee is ${emp.Status}`);
+    }
 
     // Salary is the gross — split into components, then deduct.
     // Net is always less than gross.
