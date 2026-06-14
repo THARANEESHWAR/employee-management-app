@@ -1,0 +1,65 @@
+{
+  "xsappname": "employee-app",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.HRAdmin",
+      "description": "HR Administrator scope"
+    },
+    {
+      "name": "$XSAPPNAME.Manager",
+      "description": "Manager scope"
+    },
+    {
+      "name": "$XSAPPNAME.Employee",
+      "description": "Employee scope"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "HRAdmin",
+      "description": "HR Administrator role with full access",
+      "scope-references": [
+        "$XSAPPNAME.HRAdmin",
+        "$XSAPPNAME.Manager"
+      ]
+    },
+    {
+      "name": "Manager",
+      "description": "Manager role",
+      "scope-references": [
+        "$XSAPPNAME.Manager"
+      ]
+    },
+    {
+      "name": "Employee",
+      "description": "Employee role",
+      "scope-references": [
+        "$XSAPPNAME.Employee"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "EmployeeApp_HRAdmin",
+      "description": "HR Admin role collection for Employee App",
+      "role-template-references": [
+        "$XSAPPNAME.HRAdmin"
+      ]
+    },
+    {
+      "name": "EmployeeApp_Manager",
+      "description": "Manager role collection for Employee App",
+      "role-template-references": [
+        "$XSAPPNAME.Manager"
+      ]
+    },
+    {
+      "name": "EmployeeApp_Employee",
+      "description": "Employee role collection for Employee App",
+      "role-template-references": [
+        "$XSAPPNAME.Employee"
+      ]
+    }
+  ]
+}

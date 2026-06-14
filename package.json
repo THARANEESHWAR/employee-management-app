@@ -35,6 +35,16 @@
           }
         }
       }
+    },
+    "[production]": {
+      "requires": {
+        "db": {
+          "kind": "hana"
+        },
+        "auth": {
+          "kind": "xsuaa"
+        }
+      }
     }
   },
   "workspaces": [
