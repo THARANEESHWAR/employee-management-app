@@ -101,6 +101,9 @@ entity Employee : cuid, managed {
     @title: 'Active'
     IsActive        : Boolean default true;
 
+    @title: 'Login Username'
+    Username        : String(50);
+
     // Associations
     Department      : Association to Department
                         on Department.DeptId = DeptId;

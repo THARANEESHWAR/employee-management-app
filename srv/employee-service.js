@@ -198,8 +198,21 @@ module.exports = (srv) => {
   // ── BEFORE CREATE LEAVE REQUEST ──────────
   srv.before('CREATE', 'LeaveRequests', async (req) => {
     const leave = req.data;
+    const isPrivileged = req.user?.is('HRAdmin') || req.user?.is('Manager');
 
-    if (!leave.EmpId) {
+    // Employees can only submit leave for themselves
+    if (!isPrivileged) {
+      const self = await SELECT.one
+        .from('com.employee.app.Employee')
+        .where({ Username: req.user.id });
+      if (!self) return req.error(403, 'No employee record linked to your login. Contact HR.');
+      if (leave.EmpId && leave.EmpId !== self.EmpId) {
+        return req.error(403, `You can only submit leave for yourself (${self.EmpId})`);
+      }
+      req.data.EmpId = self.EmpId;
+    }
+
+    if (!leave.EmpId && !req.data.EmpId) {
       return req.error(400, 'Employee ID is required');
     }
     if (!leave.FromDate || !leave.ToDate) {
@@ -443,6 +456,15 @@ module.exports = (srv) => {
     const emp = await SELECT.one.from('com.employee.app.Employee').where({ ID: id });
     if (!emp) return req.error(404, 'Employee not found');
 
+    // Employees can only mark their own attendance
+    const isPrivileged = req.user?.is('HRAdmin') || req.user?.is('Manager');
+    if (!isPrivileged) {
+      const self = await SELECT.one.from('com.employee.app.Employee').where({ Username: req.user.id });
+      if (!self || self.EmpId !== emp.EmpId) {
+        return req.error(403, 'You can only mark attendance for yourself');
+      }
+    }
+
     const validStatuses = ['Present', 'Absent', 'Half Day', 'On Leave', 'Holiday'];
     if (status && !validStatuses.includes(status)) {
       return req.error(400, `Invalid status. Allowed: ${validStatuses.join(', ')}`);
@@ -465,6 +487,15 @@ module.exports = (srv) => {
     const id = req.params[req.params.length - 1]?.ID;
     const emp = await SELECT.one.from('com.employee.app.Employee').where({ ID: id });
     if (!emp) return req.error(404, 'Employee not found');
+
+    // Employees can only check out themselves
+    const isPrivileged = req.user?.is('HRAdmin') || req.user?.is('Manager');
+    if (!isPrivileged) {
+      const self = await SELECT.one.from('com.employee.app.Employee').where({ Username: req.user.id });
+      if (!self || self.EmpId !== emp.EmpId) {
+        return req.error(403, 'You can only check out yourself');
+      }
+    }
 
     const today = new Date().toISOString().split('T')[0];
     const record = await SELECT.one.from('com.employee.app.Attendance').where({ EmpId: emp.EmpId, AttDate: today });
