@@ -3,7 +3,11 @@
   "sap.app": {
     "id": "com.employee.employeelist",
     "type": "application",
-    "i18n": "i18n/i18n.properties",
+    "i18n": {
+      "bundleUrl": "i18n/i18n.properties",
+      "supportedLocales": ["en"],
+      "fallbackLocale": "en"
+    },
     "applicationVersion": { "version": "1.0.0" },
     "title": "{{appTitle}}",
     "description": "{{appDescription}}",
