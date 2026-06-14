@@ -115,6 +115,20 @@
                   }
                 }
               },
+              "views": {
+                "paths": [
+                  {
+                    "key": "table",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.LineItem",
+                    "label": "Table"
+                  },
+                  {
+                    "key": "chart",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant",
+                    "label": "Chart"
+                  }
+                ]
+              },
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
@@ -125,6 +139,11 @@
                       "name": "NewPage",
                       "createAtEnd": false
                     }
+                  }
+                },
+                "@com.sap.vocabularies.UI.v1.Chart": {
+                  "chartSettings": {
+                    "chartType": "donut"
                   }
                 }
               }

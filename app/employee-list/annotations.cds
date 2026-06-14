@@ -61,6 +61,20 @@ annotate service.Employees with {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// EMPLOYEES — AGGREGATION SUPPORT (for charts)
+// ══════════════════════════════════════════════════════════════════
+annotate service.Employees with @(
+    Aggregation.ApplySupported: {
+        Transformations       : ['aggregate', 'groupby', 'filter'],
+        GroupableProperties   : [Status, DepartmentName, SalaryGrade, Gender, DeptId],
+        AggregatableProperties: [
+            { Property: Salary      },
+            { Property: LeaveBalance }
+        ]
+    }
+);
+
+// ══════════════════════════════════════════════════════════════════
 // EMPLOYEES — LIST REPORT + OBJECT PAGE
 // ══════════════════════════════════════════════════════════════════
 annotate service.Employees with @(
@@ -69,6 +83,56 @@ annotate service.Employees with @(
     Presentation.SortOrder: [
         { $Type: 'Common.SortOrderType', Property: EmpId, Descending: false }
     ],
+
+    // ── Analytics: Chart definition ──────────────────────────────
+    UI.Chart #ByStatus: {
+        $Type              : 'UI.ChartDefinitionType',
+        Title              : 'Employees by Status',
+        ChartType          : #Donut,
+        Dimensions         : [Status],
+        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: Status,         Role: #Category }],
+        Measures           : [Salary],
+        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:   Salary,         Role: #Axis1    }]
+    },
+
+    UI.Chart #ByDepartment: {
+        $Type              : 'UI.ChartDefinitionType',
+        Title              : 'Salary by Department',
+        ChartType          : #Bar,
+        Dimensions         : [DepartmentName],
+        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: DepartmentName, Role: #Category }],
+        Measures           : [Salary],
+        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:   Salary,         Role: #Axis1    }]
+    },
+
+    UI.Chart #BySalaryGrade: {
+        $Type              : 'UI.ChartDefinitionType',
+        Title              : 'Employees by Salary Grade',
+        ChartType          : #Bar,
+        Dimensions         : [SalaryGrade],
+        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: SalaryGrade,    Role: #Category }],
+        Measures           : [Salary],
+        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:   Salary,         Role: #Axis1    }]
+    },
+
+    // ── Analytics: Default chart used in List Report ─────────────
+    UI.Chart: {
+        $Type              : 'UI.ChartDefinitionType',
+        Title              : 'Employees by Status',
+        ChartType          : #Donut,
+        Dimensions         : [Status],
+        DimensionAttributes: [{ $Type: 'UI.ChartDimensionAttributeType', Dimension: Status, Role: #Category }],
+        Measures           : [Salary],
+        MeasureAttributes  : [{ $Type: 'UI.ChartMeasureAttributeType',   Measure:   Salary, Role: #Axis1    }]
+    },
+
+    // ── Analytics: PresentationVariant — chart + table combined ──
+    UI.PresentationVariant: {
+        $Type         : 'UI.PresentationVariantType',
+        Text          : 'Default',
+        SortOrder     : [{ $Type: 'Common.SortOrderType', Property: EmpId, Descending: false }],
+        Visualizations: ['@UI.Chart', '@UI.LineItem']
+    },
 
     // Object Page header
     UI.HeaderInfo: {
