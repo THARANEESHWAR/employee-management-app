@@ -6,7 +6,8 @@ service EmployeeService {
 
     @odata.draft.enabled: true
     @restrict: [
-        { grant: 'READ',                         to: 'authenticated-user' },
+        { grant: 'READ',                         to: ['HRAdmin', 'Manager'] },
+        { grant: 'READ',                         to: 'Employee', where: 'Username = $user' },
         { grant: ['CREATE', 'UPDATE', 'DELETE'], to: 'HRAdmin' }
     ]
     entity Employees as projection on db.Employee {
@@ -32,7 +33,8 @@ service EmployeeService {
     entity Departments    as projection on db.Department;
 
     @restrict: [
-        { grant: '*', to: ['HRAdmin', 'Manager'] }
+        { grant: '*',    to: ['HRAdmin', 'Manager'] },
+        { grant: 'READ', to: 'Employee', where: 'Employee.Username = $user' }
     ]
     entity SalaryHistories as projection on db.SalaryHistory {
         *,
@@ -40,6 +42,10 @@ service EmployeeService {
     }
 
     @odata.draft.enabled: true
+    @restrict: [
+        { grant: '*',                                    to: ['HRAdmin', 'Manager'] },
+        { grant: ['READ', 'CREATE', 'UPDATE', 'DELETE'], to: 'Employee', where: 'Employee.Username = $user' }
+    ]
     entity LeaveRequests as projection on db.LeaveRequest {
         *,
         virtual null as StatusCriticality : Integer
@@ -55,13 +61,18 @@ service EmployeeService {
         action cancel() returns String;
     };
 
+    @restrict: [
+        { grant: '*',    to: ['HRAdmin', 'Manager'] },
+        { grant: 'READ', to: 'Employee', where: 'Employee.Username = $user' }
+    ]
     entity Attendances as projection on db.Attendance {
         *,
         virtual null as StatusCriticality : Integer
     }
 
     @restrict: [
-        { grant: '*', to: ['HRAdmin', 'Manager'] }
+        { grant: '*',    to: ['HRAdmin', 'Manager'] },
+        { grant: 'READ', to: 'Employee', where: 'Employee.Username = $user' }
     ]
     entity Payrolls as projection on db.Payroll {
         *,
@@ -73,8 +84,12 @@ service EmployeeService {
     @requires: ['HRAdmin']
     action processPayroll(empId : String, payMonth : String) returns String;
 
-    // Unbound versions (kept for API compatibility)
+    // Unbound versions (kept for API compatibility) — privileged only.
+    // Employees use the self-service bound actions below instead.
+    @requires: ['HRAdmin', 'Manager']
     action markAttendance(empId : String, status : String) returns String;
+
+    @requires: ['HRAdmin', 'Manager']
     action checkOut(empId : String) returns String;
 
     // Bound versions on Employees — empId auto-known from context

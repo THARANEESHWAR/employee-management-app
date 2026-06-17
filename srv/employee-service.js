@@ -363,6 +363,17 @@ module.exports = (srv) => {
       return req.error(400, `Only Pending requests can be cancelled (current: ${leave.Status})`);
     }
 
+    // Employees may only cancel their own leave requests
+    const isPrivileged = req.user?.is('HRAdmin') || req.user?.is('Manager');
+    if (!isPrivileged) {
+      const self = await SELECT.one
+        .from('com.employee.app.Employee')
+        .where({ Username: req.user.id });
+      if (!self || self.EmpId !== leave.EmpId) {
+        return req.error(403, 'You can only cancel your own leave requests');
+      }
+    }
+
     await UPDATE('com.employee.app.LeaveRequest')
       .set({ Status: 'Cancelled', Remarks: 'Cancelled by ' + req.user.id })
       .where({ ID: leaveId });

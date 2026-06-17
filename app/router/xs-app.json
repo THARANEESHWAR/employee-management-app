@@ -1,7 +1,6 @@
 {
   "welcomeFile": "/webapp/index.html",
   "authenticationMethod": "route",
-  "identityProvider": "sap.default",
   "routes": [
     {
       "source": "^/odata/(.*)$",
@@ -19,6 +18,12 @@
     {
       "source": "^/webapp/(.*)$",
       "localDir": "webapp",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^(/[^.]+$|/)",
+      "target": "/index.html",
+      "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa"
     },
     {

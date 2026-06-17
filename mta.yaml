@@ -61,6 +61,22 @@ modules:
           url: '~{srv-url}'
           forwardAuthToken: true
       - name: employee-app-xsuaa
+      - name: employee-app-html5-repo-runtime
+
+  - name: employee-app-ui-deployer
+    type: com.sap.application.content
+    path: app/employee-list
+    requires:
+      - name: employee-app-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install --legacy-peer-deps
+        - npx ui5 build --config ui5.yaml --clean-dest
+      supported-platforms: []
 
 resources:
   - name: employee-app-db
@@ -80,3 +96,15 @@ resources:
       config:
         xsappname: employee-app
         tenant-mode: dedicated
+
+  - name: employee-app-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  - name: employee-app-html5-repo-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
